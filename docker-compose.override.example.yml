@@ -1,8 +1,8 @@
 # Copy to docker-compose.override.yml after building local images:
 #   cp docker-compose.override.example.yml docker-compose.override.yml
 #
-# Do not add an `ingress` service here. Ingress comes from docker-compose.yml
-# and Traefik labels from docker-compose.traefik.yml.
+# Never add an `ingress` service here. Traefik labels live in
+# docker-compose.traefik.yml, which already sets image: nginx:1.
 
 services:
   api:

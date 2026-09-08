@@ -205,10 +205,9 @@ services:
             PHP_MEMORY_LIMIT: 1G
     ui:
         image: opnform-ui:local
-    ingress:
-        volumes:
-            - ./custom-nginx.conf:/etc/nginx/conf.d/default.conf
 ```
+
+Do not add an `ingress` service to the override file unless it also sets `image: nginx:1`. Traefik labels belong in `docker-compose.traefik.yml`.
 
 ## Environment Variables
 

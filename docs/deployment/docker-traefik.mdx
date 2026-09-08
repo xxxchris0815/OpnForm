@@ -30,32 +30,40 @@ graph LR
 - A DNS record for your public hostname, for example `forms.example.com`, pointing at the Traefik host
 - Traefik already handling HTTP-01 or TLS certificates for that hostname
 
-## Step 1: Clone OpnForm
+## Clean checkout
+
+Do not copy Traefik labels into `docker-compose.yml` or `docker-compose.override.yml`. Those files must not define `ingress` without `image: nginx:1`.
 
 ```bash
-git clone https://github.com/OpnForm/OpnForm.git
-cd OpnForm
+git fetch origin
+git checkout cursor/partial-submission-webhook-8dbe
+git pull origin cursor/partial-submission-webhook-8dbe
 ```
 
-Use the branch or tag you want to deploy. For a production image build from this repository, stay on the commit you intend to run.
-
-## Step 2: Generate the application environment
+Replace a broken override file if you created one earlier:
 
 ```bash
-chmod +x scripts/docker-setup.sh
-./scripts/docker-setup.sh --public-url https://forms.example.com
+cp docker-compose.override.example.yml docker-compose.override.yml
+```
+
+## Step 1: Generate the application environment
+
+```bash
+chmod +x scripts/docker-setup.sh scripts/docker-compose-traefik.sh
+./scripts/docker-setup.sh --traefik --public-url https://forms.example.com
 ```
 
 Replace `https://forms.example.com` with the exact origin users type in the browser. Do not include a path or trailing slash. Use HTTPS.
 
-The script writes `api/.env` and `client/.env`, including:
+The script writes:
 
 | File | Values |
 | --- | --- |
 | `api/.env` | `APP_URL` and `FRONT_URL` |
 | `client/.env` | `NUXT_PUBLIC_APP_URL` and `NUXT_PUBLIC_API_BASE` |
+| `docker/traefik.env` | `OPNFORM_DOMAIN` taken from that URL |
 
-## Step 3: Trust Traefik as a reverse proxy
+## Step 2: Trust Traefik as a reverse proxy
 
 Edit `api/.env` and set `TRUSTED_PROXIES` to the address or CIDR Traefik uses when it connects to the ingress container. This is usually the Traefik Docker network gateway or the Traefik container IP range.
 
@@ -65,37 +73,42 @@ TRUSTED_PROXIES=172.18.0.0/16
 
 Use the network that Traefik and OpnForm share. Do not set `TRUSTED_PROXIES=*`. Recreate the API container after changing this value.
 
-## Step 4: Attach the ingress to Traefik
+## Step 3: Review Traefik settings
 
-The repository includes `docker-compose.traefik.yml`. It repeats the full `ingress` service (including `image: nginx:1`) and adds Traefik labels. It does not use Compose `!reset` / `!override` tags, which some Compose versions treat as replacing the whole service.
-
-Edit these values before starting:
-
-- `forms.example.com` — your public hostname
-- `websecure` — your Traefik HTTPS entrypoint name
-- `letsencrypt` — your Traefik certificate resolver name
-- `traefik` — the external Docker network Traefik uses
-
-Comment out the host port on `ingress` in `docker-compose.yml` so Traefik can bind 80/443:
-
-```yaml
-  ingress:
-    image: nginx:1
-    # ports:
-    #   - 80:80
-```
-
-`docker-compose.yml` must always be the first `-f` file. `docker-compose.override.yml` must not define `ingress`.
+Edit `docker/traefik.env` if the hostname, entrypoint, certificate resolver, or Docker network name differ:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
+OPNFORM_DOMAIN=forms.example.com
+TRAEFIK_ENTRYPOINT=websecure
+TRAEFIK_CERT_RESOLVER=letsencrypt
+TRAEFIK_DOCKER_NETWORK=traefik
+OPNFORM_INGRESS_IP=127.0.0.1
+OPNFORM_INGRESS_PORT=18080
 ```
+
+`OPNFORM_INGRESS_PORT` must not be `80`. Traefik binds 80/443 on the host. Ingress stays reachable from Traefik on the Docker network at container port 80.
+
+## Step 4: Validate Compose, then start
+
+```bash
+./scripts/docker-compose-traefik.sh config
+./scripts/docker-compose-traefik.sh up -d
+```
+
+`config` must print `image: nginx:1` under `ingress`. The helper loads, in this order:
+
+1. `docker/traefik.env`
+2. `docker-compose.yml`
+3. `docker-compose.traefik.yml`
+4. `docker-compose.override.yml` if present
+
+It refuses to start if the override file defines `ingress`.
 
 ## Step 5: Confirm the containers are healthy
 
 ```bash
-docker compose ps
-docker compose logs -f ingress api ui
+./scripts/docker-compose-traefik.sh ps
+./scripts/docker-compose-traefik.sh logs -f ingress api ui
 ```
 
 Wait until `api`, `ui`, `api-scheduler`, `api-worker`, and `ingress` are healthy. The first start can take a few minutes while images pull.
@@ -107,19 +120,12 @@ Open `https://forms.example.com`. OpnForm should redirect to the setup page so y
 Then apply database migrations if you built from source or the API image does not run them automatically:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml exec api php artisan migrate --force
+./scripts/docker-compose-traefik.sh exec api php artisan migrate --force
 ```
 
 ## Step 6: Optional custom image build
 
-The published Hub images do not include this incomplete-submission work until it is released. To deploy this checkout:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml build
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
-```
-
-Or build specific images:
+The published Hub images do not include this incomplete-submission work until it is released. Build from this checkout:
 
 ```bash
 docker build -t opnform-api:local -f docker/Dockerfile.api .
@@ -144,20 +150,12 @@ Copy the example override so the API, worker, and scheduler all use the local AP
 
 ```bash
 cp docker-compose.override.example.yml docker-compose.override.yml
+./scripts/docker-compose-traefik.sh up -d
 ```
-
-Do not add an `ingress` service to that file. Then start with every Compose file, in this order:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml config
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml up -d
-```
-
-`config` must print `image: nginx:1` under `ingress` before you run `up`.
 
 ## Traefik labels
 
-The override file uses labels similar to:
+`docker-compose.traefik.yml` always sets `image: nginx:1` and labels similar to:
 
 ```yaml
 labels:
@@ -170,7 +168,7 @@ labels:
   - traefik.http.services.opnform.loadbalancer.server.port=80
 ```
 
-Adjust entrypoint, resolver, and network names to match your Traefik deployment. The load balancer port is `80` because that is the ingress container's Nginx port, not the host port.
+The hostname comes from `OPNFORM_DOMAIN`. The load balancer port is `80` because that is the ingress container's Nginx port, not the host port.
 
 ## Common Traefik issues
 
@@ -194,21 +192,16 @@ docker build --build-arg NODE_MAX_OLD_SPACE_SIZE=8192 -t opnform-ui:local -f doc
 ```
 </Accordion>
 <Accordion title="service ingress has neither an image nor a build context">
-`docker-compose.override.yml` is merged last. If it contains an `ingress:` key without `image: nginx:1`, Compose drops the nginx image.
+The Traefik labels belong only in `docker-compose.traefik.yml`, which includes `image: nginx:1`. If `docker-compose.override.yml` or `docker-compose.yml` contains an `ingress:` block with only labels, Compose drops nginx.
 
 ```bash
-grep -n ingress docker-compose.override.yml
+grep -n ingress docker-compose.yml docker-compose.traefik.yml docker-compose.override.yml
 cp docker-compose.override.example.yml docker-compose.override.yml
-```
-
-Also comment out `ports: - 80:80` on `ingress` in `docker-compose.yml`. Then:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml config
+./scripts/docker-compose-traefik.sh config
 ```
 </Accordion>
 <Accordion title="502 Bad Gateway">
-Confirm `ingress` is on the same Docker network as Traefik and that the service port in the labels is `80`. Check `docker compose logs ingress`.
+Confirm `ingress` is on the same Docker network as Traefik and that the service port in the labels is `80`. Check `./scripts/docker-compose-traefik.sh logs ingress`.
 </Accordion>
 <Accordion title="Redirect loop or mixed HTTP/HTTPS">
 `APP_URL`, `FRONT_URL`, and `NUXT_PUBLIC_APP_URL` must be the public `https://` origin. Recreate the containers after changing `.env` files; `docker compose restart` does not reload them.
