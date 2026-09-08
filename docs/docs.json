@@ -23,13 +23,15 @@
           {
             "group": "Features",
             "pages": [
-              "features/computed-variables"
+              "features/computed-variables",
+              "features/partial-submissions"
             ]
           },
           {
             "group": "Deployment",
             "pages": [
               "deployment/docker",
+              "deployment/docker-traefik",
               "deployment/docker-development",
               "deployment/local-deployment",
               "deployment/cloud-vs-self-hosting",
@@ -124,6 +126,7 @@
             "pages": [
               "api-reference/integrations/list-form-integrations",
               "api-reference/integrations/create-webhook-integration",
+              "api-reference/integrations/create-partial-webhook-integration",
               "api-reference/integrations/update-webhook-integration",
               "api-reference/integrations/delete-webhook-integration",
               "api-reference/integrations/list-webhook-events",

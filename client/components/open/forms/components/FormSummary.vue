@@ -168,6 +168,7 @@ const statusOptions = [
   { value: 'all', name: 'All' },
   { value: 'completed', name: 'Completed' },
   { value: 'partial', name: 'Partial' },
+  { value: 'abandoned', name: 'Abandoned' },
 ]
 
 const localDateFormat = computed(() => {

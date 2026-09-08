@@ -44,6 +44,14 @@
     "required_tier": "free",
     "crisp_help_page_slug": "can-i-trigger-another-service-whenever-my-form-receives-a-submission-webhooks-6nrnfn"
   },
+  "partial_webhook": {
+    "name": "Incomplete Submission Webhook",
+    "icon": "material-symbols:web-traffic",
+    "section_name": "Automation",
+    "file_name": "PartialWebhookIntegration",
+    "actions_file_name": "WebhookIntegrationActions",
+    "required_tier": "business"
+  },
   "zapier": {
     "name": "Zapier",
     "icon": "cib:zapier",

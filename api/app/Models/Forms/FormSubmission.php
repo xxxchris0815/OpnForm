@@ -26,6 +26,7 @@ class FormSubmission extends Model implements VersionableNestedDiff
 
     public const STATUS_PARTIAL = 'partial';
     public const STATUS_COMPLETED = 'completed';
+    public const STATUS_ABANDONED = 'abandoned';
 
     protected $fillable = [
         'data',

@@ -1353,6 +1353,17 @@ components:
                     type: boolean
                 enable_partial_submissions:
                     type: boolean
+                partial_submission_abandonment_value:
+                    type: integer
+                    minimum: 1
+                    maximum: 3650
+                    nullable: true
+                    description: Number of abandonment units after the last partial save before a draft is marked abandoned. Set this and partial_submission_abandonment_unit to null to keep drafts as partial indefinitely.
+                partial_submission_abandonment_unit:
+                    type: string
+                    enum: [minute, hour, day]
+                    nullable: true
+                    description: Unit used by partial_submission_abandonment_value. Both fields must be provided together.
                 editable_submissions:
                     type: boolean
                 editable_submissions_button_text:
@@ -1630,7 +1641,7 @@ components:
                     readOnly: true
                 integration_id:
                     type: string
-                    description: Type of integration exposed via API, including "webhook" and the provider-specific "make" integration.
+                    description: Type of integration exposed via API, including "webhook", "partial_webhook", and the provider-specific "make" integration.
                     example: "webhook"
                 status:
                     type: string

@@ -1,0 +1,111 @@
+---
+openapi: post /open/forms/{form}/integrations
+---
+
+# Create Incomplete Submission Webhook
+
+Add a dedicated webhook for in-progress and abandoned form answers. This is separate from the regular webhook that fires when a respondent completes the form.
+
+## Authentication & Scope
+
+This endpoint requires a **Personal Access Token** with the `manage-integrations` ability.
+
+## Request
+
+<ParamField path="form" type="number" required>
+The ID of the form to which the webhook will be added.
+</ParamField>
+
+<ParamField body="integration_id" type="string" required>
+Use `"partial_webhook"`.
+</ParamField>
+
+<ParamField body="status" type="string" required>
+The initial status of the webhook. Allowed values: `"active"`, `"inactive"`.
+</ParamField>
+
+<ParamField body="data" type="object" required>
+Configuration object containing webhook details.
+
+<Expandable title="data properties">
+<ParamField body="webhook_url" type="string" required>
+The URL that receives incomplete form data. Must be a valid HTTPS URL that resolves only to public IP addresses.
+</ParamField>
+
+<ParamField body="events" type="array">
+Events to deliver. Allowed values: `"abandoned"`, `"partial"`. Defaults to `["abandoned"]` when omitted.
+
+- `abandoned`: sent once after the form's abandonment timeout
+- `partial`: sent once when a partial submission is first stored
+</ParamField>
+
+<ParamField body="webhook_secret" type="string">
+Optional signing secret for HMAC-SHA256 validation. Must be at least 12 characters.
+</ParamField>
+
+<ParamField body="webhook_headers" type="object">
+Optional custom HTTP headers. Maximum 10 headers. The same blocked headers as regular webhooks apply.
+</ParamField>
+</Expandable>
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.opnform.com/open/forms/123/integrations' \
+  -H 'Authorization: Bearer YOUR_PAT' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "integration_id": "partial_webhook",
+    "status": "active",
+    "data": {
+      "webhook_url": "https://example.com/incomplete-hook",
+      "events": ["abandoned"],
+      "webhook_secret": "whsec_1234567890abcdefghijklmnop"
+    }
+  }'
+```
+</RequestExample>
+
+## Response
+
+`200 OK` – Webhook created successfully.
+
+<ResponseExample>
+```json Success
+{
+  "message": "Form Integration was created.",
+  "form_integration": {
+    "id": 43,
+    "form_id": 123,
+    "integration_id": "partial_webhook",
+    "status": "active",
+    "data": {
+      "webhook_url": "https://example.com/incomplete-hook",
+      "events": ["abandoned"],
+      "webhook_secret": "whsec_1234567890abcdefghijklmnop"
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Payload
+
+Deliveries include the usual form and field payload, plus:
+
+```json
+{
+  "event": "submission.abandoned",
+  "status": "abandoned",
+  "form_id": 123,
+  "submission_id": 456,
+  "abandoned_at": "2026-09-08T12:30:00+00:00",
+  "data": {}
+}
+```
+
+`event` is `"submission.abandoned"` or `"submission.partial"`. See [Partial and abandoned submissions](/features/partial-submissions) for the timeout behavior.
+
+## Error responses
+
+`422 Unprocessable Entity` – Validation error (invalid URL, empty `events`, webhook secret too short).

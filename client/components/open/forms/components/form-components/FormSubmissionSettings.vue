@@ -115,6 +115,60 @@
             />
           </template>
         </ToggleSwitchInput>
+
+        <div
+          v-if="form.enable_partial_submissions"
+          class="mt-4 max-w-lg rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+        >
+          <ToggleSwitchInput
+            v-model="abandonmentEnabled"
+            name="partial_submission_abandonment_enabled"
+            label="Mark inactive drafts as abandoned"
+            help="After this timeout with no further input, the last saved answers stay in the database and can be sent to an Incomplete Submission webhook."
+          />
+
+          <div
+            v-if="abandonmentEnabled"
+            class="mt-4"
+          >
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+              <TextInput
+                name="partial_submission_abandonment_value"
+                :form="form"
+                native-type="number"
+                :min="1"
+                :max="3650"
+                :required="true"
+                label="Abandon after"
+                class="w-full sm:max-w-40"
+              />
+              <SelectInput
+                name="partial_submission_abandonment_unit"
+                :form="form"
+                :options="PARTIAL_SUBMISSION_ABANDONMENT_UNITS"
+                :required="true"
+                class="w-full sm:max-w-48"
+              />
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              <UButton
+                v-for="shortcut in PARTIAL_SUBMISSION_ABANDONMENT_SHORTCUTS"
+                :key="shortcut.label"
+                :label="shortcut.label"
+                color="neutral"
+                variant="soft"
+                size="xs"
+                type="button"
+                @click="applyAbandonmentShortcut(shortcut)"
+              />
+            </div>
+
+            <p class="mt-3 text-xs text-neutral-500">
+              Configure a dedicated webhook in Integrations → Incomplete Submission Webhook to receive the saved answers when a respondent stops filling the form.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div class="mb-8 border-t pt-4">
@@ -356,6 +410,13 @@ import {
   setSubmissionRetentionEnabled,
   syncSubmissionRetentionEnabled
 } from '~/lib/forms/submissionRetention.js'
+import {
+  PARTIAL_SUBMISSION_ABANDONMENT_SHORTCUTS,
+  PARTIAL_SUBMISSION_ABANDONMENT_UNITS,
+  applyPartialSubmissionAbandonmentShortcut,
+  setPartialSubmissionAbandonmentEnabled,
+  syncPartialSubmissionAbandonmentEnabled
+} from '~/lib/forms/partialSubmissionAbandonment.js'
 
 const workingFormStore = useWorkingFormStore()
 const { content: form } = storeToRefs(workingFormStore)
@@ -421,6 +482,51 @@ const retentionEnabled = computed({
 const applyRetentionShortcut = (shortcut) => {
   applySubmissionRetentionShortcut(form.value, shortcut)
 }
+
+const isAbandonmentEnabled = ref(Boolean(
+  form.value.partial_submission_abandonment_value
+  && form.value.partial_submission_abandonment_unit
+))
+
+const abandonmentEnabled = computed({
+  get: () => isAbandonmentEnabled.value,
+  set: (enabled) => {
+    isAbandonmentEnabled.value = enabled
+    setPartialSubmissionAbandonmentEnabled(form.value, enabled)
+  }
+})
+
+const applyAbandonmentShortcut = (shortcut) => {
+  applyPartialSubmissionAbandonmentShortcut(form.value, shortcut)
+}
+
+watch(
+  [
+    () => form.value.partial_submission_abandonment_value,
+    () => form.value.partial_submission_abandonment_unit
+  ],
+  ([value, unit]) => {
+    isAbandonmentEnabled.value = syncPartialSubmissionAbandonmentEnabled(
+      isAbandonmentEnabled.value,
+      value,
+      unit
+    )
+  }
+)
+
+watch(() => form.value.id, () => {
+  isAbandonmentEnabled.value = syncPartialSubmissionAbandonmentEnabled(
+    false,
+    form.value.partial_submission_abandonment_value,
+    form.value.partial_submission_abandonment_unit
+  )
+})
+
+watch(() => form.value.enable_partial_submissions, (enabled) => {
+  if (!enabled) {
+    abandonmentEnabled.value = false
+  }
+})
 
 watch(
   [

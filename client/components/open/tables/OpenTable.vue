@@ -358,7 +358,8 @@ const deleteMultiRecord = () => {
 const statusList = [
   { label: 'All', value: 'all' },
   { label: 'Submitted', value: 'completed' },
-  { label: 'In Progress', value: 'partial' }
+  { label: 'In Progress', value: 'partial' },
+  { label: 'Abandoned', value: 'abandoned' }
 ]
 
 // Default sort by created_at desc

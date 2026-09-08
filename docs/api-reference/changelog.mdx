@@ -3,6 +3,21 @@ title: "Changelog"
 description: "Notable updates to the OpnForm API."
 ---
 
+## 2026-09-08 – Incomplete submission webhooks and abandonment timeout
+
+Forms can store in-progress answers, mark them as abandoned after a configurable timeout, and send that data to a dedicated webhook.
+
+### What changed
+
+- Forms accept `partial_submission_abandonment_value` and `partial_submission_abandonment_unit` (`minute`, `hour`, or `day`).
+- Submissions can have status `abandoned` in addition to `partial` and `completed`.
+- A new integration type, `partial_webhook`, delivers `submission.partial` and `submission.abandoned` events. Existing `webhook` integrations still fire only for completed submissions.
+- Submission listing, summary, export, and MCP tools accept `status=abandoned`.
+
+### Migration guide
+
+Create a `partial_webhook` integration if you want incomplete answers delivered separately from completed webhooks. Existing completion webhooks do not need changes.
+
 ## 2026-05-27 – Workspace invite listing requires admin access
 
 The workspace invite listing endpoint now requires workspace admin access:

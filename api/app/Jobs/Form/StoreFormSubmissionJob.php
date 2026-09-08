@@ -63,6 +63,8 @@ class StoreFormSubmissionJob implements ShouldQueue
     private ?array $formData = null;
     private ?int $completionTime = null;
     private bool $isPartial = false;
+    private bool $skippedCompletedPartialUpdate = false;
+    private bool $wasNewSubmission = false;
     private bool $isClientProvidedSubmissionId = false;
     private ?string $submitterIp = null;
     private array $attribution = [];
@@ -91,8 +93,20 @@ class StoreFormSubmissionJob implements ShouldQueue
         $this->addHiddenPrefills($this->formData);
         $this->storeSubmission($this->formData);
         $this->formData['submission_id'] = $this->submissionId;
+
+        if ($this->skippedCompletedPartialUpdate) {
+            return;
+        }
+
         if (!$this->isPartial) {
             FormSubmitted::dispatch($this->form, $this->formData, $this->storedMeta);
+        } elseif ($this->wasNewSubmission) {
+            FormSubmitted::dispatch(
+                $this->form,
+                $this->formData,
+                $this->storedMeta,
+                FormSubmitted::EVENT_PARTIAL
+            );
         }
     }
 
@@ -206,6 +220,7 @@ class StoreFormSubmissionJob implements ShouldQueue
                     && !$this->allowCompletedUpdate
                     && $submission->status === FormSubmission::STATUS_COMPLETED
                 ) {
+                    $this->skippedCompletedPartialUpdate = true;
                     return;
                 }
             } else {
@@ -214,6 +229,7 @@ class StoreFormSubmissionJob implements ShouldQueue
             }
 
             $isNewSubmission = !$submission->exists;
+            $this->wasNewSubmission = $isNewSubmission;
 
             if ($this->isPartial) {
                 foreach ($formData as $fieldId => $value) {

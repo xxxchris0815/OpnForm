@@ -17,10 +17,14 @@ const props = defineProps({
 })
 
 const displayLabel = computed(() => {
-  return props.value === 'partial' ? 'In Progress' : 'Submitted'
+  if (props.value === 'partial') return 'In Progress'
+  if (props.value === 'abandoned') return 'Abandoned'
+  return 'Submitted'
 })
 
 const badgeColor = computed(() => {
-  return props.value === 'partial' ? 'warning' : 'success'
+  if (props.value === 'partial') return 'warning'
+  if (props.value === 'abandoned') return 'neutral'
+  return 'success'
 })
-</script> 
+</script>

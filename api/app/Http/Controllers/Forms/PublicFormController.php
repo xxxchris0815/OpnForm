@@ -229,7 +229,10 @@ class PublicFormController extends Controller
                 return true;
             }
 
-            return $canPartialSubmit && $submission?->status === FormSubmission::STATUS_PARTIAL;
+            return $canPartialSubmit && in_array($submission?->status, [
+                FormSubmission::STATUS_PARTIAL,
+                FormSubmission::STATUS_ABANDONED,
+            ], true);
         };
 
         if (!Str::isUuid($submissionIdentifier)) {
