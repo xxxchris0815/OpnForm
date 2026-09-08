@@ -1,14 +1,33 @@
 # Traefik overlay for the production Docker stack.
-# Always include docker-compose.yml first. Traefik.yml alone is not a full project.
-#
+# Always include docker-compose.yml first:
 #   docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml up -d
+#
+# Comment out the host `ports:` mapping on ingress in docker-compose.yml so
+# Traefik can bind 80/443. Do not put an `ingress:` service in the override file.
 #
 # See docs/deployment/docker-traefik.mdx for the full walkthrough.
 
 services:
   ingress:
     image: nginx:1
-    ports: !override []
+    container_name: opnform-ingress
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/templates/default.conf.template
+    environment:
+      - NGINX_MAX_BODY_SIZE=64m
+    depends_on:
+      api:
+        condition: service_started
+      ui:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t && curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    expose:
+      - "80"
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik

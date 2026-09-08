@@ -67,7 +67,7 @@ Use the network that Traefik and OpnForm share. Do not set `TRUSTED_PROXIES=*`. 
 
 ## Step 4: Attach the ingress to Traefik
 
-The repository includes `docker-compose.traefik.yml`. It removes the published host port from `ingress` and adds Traefik labels.
+The repository includes `docker-compose.traefik.yml`. It repeats the full `ingress` service (including `image: nginx:1`) and adds Traefik labels. It does not use Compose `!reset` / `!override` tags, which some Compose versions treat as replacing the whole service.
 
 Edit these values before starting:
 
@@ -76,13 +76,20 @@ Edit these values before starting:
 - `letsencrypt` — your Traefik certificate resolver name
 - `traefik` — the external Docker network Traefik uses
 
-Then start OpnForm. `docker-compose.yml` must always be the first `-f` file. The Traefik overlay is not a complete Compose project on its own.
+Comment out the host port on `ingress` in `docker-compose.yml` so Traefik can bind 80/443:
+
+```yaml
+  ingress:
+    image: nginx:1
+    # ports:
+    #   - 80:80
+```
+
+`docker-compose.yml` must always be the first `-f` file. `docker-compose.override.yml` must not define `ingress`.
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
 ```
-
-If your Compose version does not honor `ports: !override []`, comment out the `ports: - 80:80` mapping on `ingress` in `docker-compose.yml` so only Traefik is reachable from the internet.
 
 ## Step 5: Confirm the containers are healthy
 
@@ -187,13 +194,18 @@ docker build --build-arg NODE_MAX_OLD_SPACE_SIZE=8192 -t opnform-ui:local -f doc
 ```
 </Accordion>
 <Accordion title="service ingress has neither an image nor a build context">
-The Traefik overlay only adds labels. It is not a complete Compose file. Always pass `docker-compose.yml` first:
+`docker-compose.override.yml` is merged last. If it contains an `ingress:` key without `image: nginx:1`, Compose drops the nginx image.
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml up -d
+grep -n ingress docker-compose.override.yml
+cp docker-compose.override.example.yml docker-compose.override.yml
 ```
 
-Do not put an `ingress:` block in `docker-compose.override.yml` unless it also sets `image: nginx:1`.
+Also comment out `ports: - 80:80` on `ingress` in `docker-compose.yml`. Then:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml config
+```
 </Accordion>
 <Accordion title="502 Bad Gateway">
 Confirm `ingress` is on the same Docker network as Traefik and that the service port in the labels is `80`. Check `docker compose logs ingress`.

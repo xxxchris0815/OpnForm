@@ -111,6 +111,7 @@ services:
     container_name: opnform-ingress
     volumes:
       - ./docker/nginx.conf:/etc/nginx/templates/default.conf.template
+    # Traefik users: comment out this ports block so Traefik can bind 80/443.
     ports:
       - 80:80
     environment:
