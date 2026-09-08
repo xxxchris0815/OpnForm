@@ -76,13 +76,13 @@ Edit these values before starting:
 - `letsencrypt` — your Traefik certificate resolver name
 - `traefik` — the external Docker network Traefik uses
 
-Then start OpnForm on that network:
+Then start OpnForm. `docker-compose.yml` must always be the first `-f` file. The Traefik overlay is not a complete Compose project on its own.
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
 ```
 
-If your Compose version does not honor `ports: !reset []`, comment out the `ports: - 80:80` mapping on `ingress` in `docker-compose.yml` so only Traefik is reachable from the internet.
+If your Compose version does not honor `ports: !override []`, comment out the `ports: - 80:80` mapping on `ingress` in `docker-compose.yml` so only Traefik is reachable from the internet.
 
 ## Step 5: Confirm the containers are healthy
 
@@ -133,25 +133,20 @@ If the UI build is still killed, add at least 8 GB of swap, then retry. On a 16 
 docker build --build-arg NODE_MAX_OLD_SPACE_SIZE=8192 -t opnform-ui:local -f docker/Dockerfile.client .
 ```
 
-Create a `docker-compose.override.yml` so the API, worker, and scheduler all use the local API image:
-
-```yaml
-services:
-  api:
-    image: opnform-api:local
-  api-worker:
-    image: opnform-api:local
-  api-scheduler:
-    image: opnform-api:local
-  ui:
-    image: opnform-ui:local
-```
-
-Then start with:
+Copy the example override so the API, worker, and scheduler all use the local API image:
 
 ```bash
+cp docker-compose.override.example.yml docker-compose.override.yml
+```
+
+Do not add an `ingress` service to that file. Then start with every Compose file, in this order:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml config
 docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml up -d
 ```
+
+`config` must print `image: nginx:1` under `ingress` before you run `up`.
 
 ## Traefik labels
 
@@ -190,6 +185,15 @@ On a host with 16 GB or more:
 ```bash
 docker build --build-arg NODE_MAX_OLD_SPACE_SIZE=8192 -t opnform-ui:local -f docker/Dockerfile.client .
 ```
+</Accordion>
+<Accordion title="service ingress has neither an image nor a build context">
+The Traefik overlay only adds labels. It is not a complete Compose file. Always pass `docker-compose.yml` first:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml up -d
+```
+
+Do not put an `ingress:` block in `docker-compose.override.yml` unless it also sets `image: nginx:1`.
 </Accordion>
 <Accordion title="502 Bad Gateway">
 Confirm `ingress` is on the same Docker network as Traefik and that the service port in the labels is `80`. Check `docker compose logs ingress`.

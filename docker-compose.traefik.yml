@@ -1,13 +1,14 @@
 # Traefik overlay for the production Docker stack.
-# Usage:
-#   1. Replace forms.example.com, websecure, letsencrypt, and the traefik network name.
-#   2. docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
+# Always include docker-compose.yml first. Traefik.yml alone is not a full project.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.traefik.yml -f docker-compose.override.yml up -d
 #
 # See docs/deployment/docker-traefik.mdx for the full walkthrough.
 
 services:
   ingress:
-    ports: !reset []
+    image: nginx:1
+    ports: !override []
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik
