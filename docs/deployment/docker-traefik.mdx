@@ -200,6 +200,23 @@ cp docker-compose.override.example.yml docker-compose.override.yml
 ./scripts/docker-compose-traefik.sh config
 ```
 </Accordion>
+<Accordion title="network traefik declared as external, but could not be found">
+The Compose file is valid. Docker has no network named `traefik`. Find the network your Traefik container already uses:
+
+```bash
+docker network ls
+docker ps --format '{{.Names}}\t{{.Image}}' | grep -i traefik
+docker inspect "$(docker ps -qf name=traefik)" --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}'
+```
+
+Put that exact network name in `docker/traefik.env`:
+
+```bash
+TRAEFIK_DOCKER_NETWORK=proxy
+```
+
+Then run `./scripts/docker-compose-traefik.sh up -d` again. Creating a new empty `traefik` network does not help unless the Traefik container is attached to it.
+</Accordion>
 <Accordion title="502 Bad Gateway">
 Confirm `ingress` is on the same Docker network as Traefik and that the service port in the labels is `80`. Check `./scripts/docker-compose-traefik.sh logs ingress`.
 </Accordion>
