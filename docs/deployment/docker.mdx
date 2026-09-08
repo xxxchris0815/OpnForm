@@ -191,6 +191,8 @@ docker build -t opnform-api:local -f docker/Dockerfile.api .
 docker build -t opnform-ui:local -f docker/Dockerfile.client .
 ```
 
+The UI build can take several minutes and several GB of RAM. Warnings about CSS minification, chunk size, and missing Sentry tokens are normal. If the build exits with `signal SIGKILL`, the host ran out of memory; see [Docker with Traefik](/deployment/docker-traefik#common-traefik-issues).
+
 ### Custom Configuration
 
 Create a `docker-compose.override.yml` to customize your deployment:

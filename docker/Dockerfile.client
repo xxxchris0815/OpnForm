@@ -14,30 +14,23 @@ RUN apk add --no-cache git
 # Clear npm cache, remove existing node_modules, and install dependencies
 RUN npm cache clean --force && \
     rm -rf node_modules && \
-    npm ci
-
-# Clean up after npm install to free memory
-RUN npm cache clean --force
-
-# Explicitly install the correct version of esbuild
-# RUN npm install esbuild@0.21.5
+    npm ci && \
+    npm cache clean --force
 
 ADD ./client/ /app/
 
-ENV NODE_OPTIONS="--max-old-space-size=6144"
-# Set production mode to reduce memory usage
-ENV NODE_ENV=production
-# Disable source maps to reduce memory usage
-ENV GENERATE_SOURCEMAP=false
-# Additional memory optimizations
-ENV NUXT_TELEMETRY_DISABLED=1
-# Optimize Vite build for memory
-ENV VITE_NODE_OPTIONS="--max-old-space-size=10240"
-# Run the build with additional memory optimizations and limited concurrency
-RUN --mount=type=tmpfs,target=/tmp \
-    NODE_OPTIONS="--max-old-space-size=10240" \
-    NUXT_BUILD_CONCURRENCY=1 \
-    npm run build
+# Default heap fits typical 8 GB build hosts. Raise with:
+#   docker build --build-arg NODE_MAX_OLD_SPACE_SIZE=8192 ...
+# Do not set this higher than the RAM Docker can actually use, or the
+# kernel OOM-kills Node with SIGKILL.
+ARG NODE_MAX_OLD_SPACE_SIZE=4096
+ENV NODE_ENV=production \
+    NUXT_TELEMETRY_DISABLED=1 \
+    NUXT_DOCKER_BUILD=1 \
+    NODE_OPTIONS="--max-old-space-size=${NODE_MAX_OLD_SPACE_SIZE}"
+
+# Call nuxt directly. `npm run build` overwrites NODE_OPTIONS with 8192 MB.
+RUN npm run build:docker
 
 FROM node:24-alpine
 WORKDIR /app

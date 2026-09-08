@@ -119,6 +119,20 @@ docker build -t opnform-api:local -f docker/Dockerfile.api .
 docker build -t opnform-ui:local -f docker/Dockerfile.client .
 ```
 
+The UI image is a full Nuxt production build. CSS minify warnings, large-chunk warnings, and Sentry "no auth token" messages are expected. A failure that ends with `signal SIGKILL` is the kernel out-of-memory killer, not those warnings.
+
+The client Dockerfile now:
+
+- Uses a 4 GB Node heap by default (raise only if the host has spare RAM)
+- Skips source maps and the Sentry upload plugin
+- Avoids a RAM-backed `/tmp` mount
+
+If the UI build is still killed, add at least 8 GB of swap, then retry. On a 16 GB host you can raise the heap:
+
+```bash
+docker build --build-arg NODE_MAX_OLD_SPACE_SIZE=8192 -t opnform-ui:local -f docker/Dockerfile.client .
+```
+
 Create a `docker-compose.override.yml` so the API, worker, and scheduler all use the local API image:
 
 ```yaml
@@ -159,6 +173,24 @@ Adjust entrypoint, resolver, and network names to match your Traefik deployment.
 ## Common Traefik issues
 
 <AccordionGroup>
+<Accordion title="Client image build killed with SIGKILL">
+The Nuxt UI build needs several GB of RAM. `npm error signal SIGKILL` means Linux killed Node after it ran out of memory. CSS and chunk-size warnings in the same log are not the failure.
+
+Pull the latest branch, then rebuild. The client Dockerfile defaults to a 4 GB heap and skips source maps. If it still dies, add swap:
+
+```bash
+sudo fallocate -l 8G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+```
+
+On a host with 16 GB or more:
+
+```bash
+docker build --build-arg NODE_MAX_OLD_SPACE_SIZE=8192 -t opnform-ui:local -f docker/Dockerfile.client .
+```
+</Accordion>
 <Accordion title="502 Bad Gateway">
 Confirm `ingress` is on the same Docker network as Traefik and that the service port in the labels is `80`. Check `docker compose logs ingress`.
 </Accordion>
