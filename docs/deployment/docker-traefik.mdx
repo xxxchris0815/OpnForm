@@ -91,9 +91,17 @@ docker compose ps
 docker compose logs -f ingress api ui
 ```
 
-Wait until `api`, `ui`, and `ingress` are healthy. The first start can take a few minutes while images pull.
+Wait until `api`, `ui`, `api-scheduler`, `api-worker`, and `ingress` are healthy. The first start can take a few minutes while images pull.
+
+The scheduler container (`api-scheduler`) must stay running. Abandoned drafts are marked every five minutes by `forms:mark-abandoned-submissions`.
 
 Open `https://forms.example.com`. OpnForm should redirect to the setup page so you can create the admin account.
+
+Then apply database migrations if you built from source or the API image does not run them automatically:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.traefik.yml exec api php artisan migrate --force
+```
 
 ## Step 6: Optional custom image build
 

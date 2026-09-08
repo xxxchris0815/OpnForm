@@ -58,7 +58,7 @@ return new class () extends Migration {
             $statuses
         ));
 
-        if ($driver === 'mysql') {
+        if (in_array($driver, ['mysql', 'mariadb', 'sqlite'], true)) {
             Schema::table('form_submissions', function (Blueprint $table) use ($statuses) {
                 $table->enum('status', $statuses)
                     ->default(FormSubmission::STATUS_COMPLETED)
