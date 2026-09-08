@@ -4,10 +4,14 @@ import integrationsList from '~/data/forms/integrations.json'
 import { unref } from 'vue'
 import { useFeatureFlag } from '~/composables/useFeatureFlag.js'
 import { useWorkspaceAbilities } from '~/composables/useWorkspaceAbilities.js'
+import {
+  integrationRequiresUpgrade,
+  workspaceGrantsIntegration,
+} from '~/lib/forms/integrationAvailability.js'
 
 export function useFormIntegrations() {
   const queryClient = useQueryClient()
-  const { currentWorkspaceTier, tierMeetsRequirement } = useWorkspaceAbilities()
+  const { currentWorkspaceTier, can } = useWorkspaceAbilities()
 
   // Static integrations data
   const integrations = ref(new Map())
@@ -21,14 +25,19 @@ export function useFormIntegrations() {
 
   // Computed property for available integrations based on workspace tier and feature flags
   const availableIntegrations = computed(() => {
+    const isSelfHosted = Boolean(useFeatureFlag('self_hosted'))
     const enrichedIntegrations = new Map()
     for (const [key, integration] of integrations.value.entries()) {
       if (useFeatureFlag(`integrations.${key}`, true)) {
-        const requiredTier = integration.required_tier || 'free'
         enrichedIntegrations.set(key, {
           ...integration,
           id: key,
-          requires_upgrade: !tierMeetsRequirement(currentWorkspaceTier.value, requiredTier),
+          requires_upgrade: integrationRequiresUpgrade({
+            requiredTier: integration.required_tier || 'free',
+            currentTier: currentWorkspaceTier.value,
+            isSelfHosted,
+            grantedByWorkspace: workspaceGrantsIntegration(can, key),
+          }),
         })
       }
     }

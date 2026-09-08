@@ -229,6 +229,18 @@ Set `TRUSTED_PROXIES` to the Traefik network CIDR, then recreate the API contain
 <Accordion title="Certificates not issued">
 The Traefik router must use your TLS entrypoint and certificate resolver. The DNS record must point at the Traefik host, and port 443 must reach Traefik, not OpnForm.
 </Accordion>
+<Accordion title="Incomplete Submission Webhook is greyed out">
+Self-hosted Community has no Business plan. The running UI image still treats that card as a Cloud upgrade. Pull this branch, rebuild **both** images, and recreate the UI container:
+
+```bash
+git pull
+docker build -t opnform-api:local -f docker/Dockerfile.api .
+docker build -t opnform-ui:local -f docker/Dockerfile.client .
+./scripts/docker-compose-traefik.sh up -d --force-recreate api ui
+```
+
+Hard-refresh the browser after the new UI container is up. Restarting the old `opnform-ui:local` image is not enough.
+</Accordion>
 </AccordionGroup>
 
 ## Next steps

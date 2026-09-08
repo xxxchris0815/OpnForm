@@ -66,6 +66,7 @@ return [
         'integrations.airtable' => 'business',
         'partial_submissions' => 'business',
         'enable_partial_submissions' => 'business',
+        'integrations.partial_webhook' => 'business',
         'form_versioning' => 'business',
         'google_address_autocomplete' => 'business',
         'database_fields_update' => 'business',

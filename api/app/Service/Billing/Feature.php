@@ -20,6 +20,7 @@ final class Feature
     public const FORM_VERSIONING = 'form_versioning';
     public const ENABLE_IP_TRACKING = 'enable_ip_tracking';
     public const PARTIAL_SUBMISSIONS = 'partial_submissions';
+    public const INTEGRATIONS_PARTIAL_WEBHOOK = 'integrations.partial_webhook';
     public const SSO_OIDC = 'sso.oidc';
     public const ID_GENERATION = 'id_generation';
 
@@ -42,6 +43,7 @@ final class Feature
             self::FORM_VERSIONING,
             self::ENABLE_IP_TRACKING,
             self::PARTIAL_SUBMISSIONS,
+            self::INTEGRATIONS_PARTIAL_WEBHOOK,
             self::SSO_OIDC,
             self::ID_GENERATION,
         ];
