@@ -61,10 +61,12 @@ it('grants partial submissions on self-hosted without an enterprise license', fu
     expect($this->service->getTier($workspace))->toBe('pro');
     expect($this->service->hasFeature($workspace, Feature::PARTIAL_SUBMISSIONS))->toBeTrue();
     expect($this->service->hasFeature($workspace, Feature::INTEGRATIONS_PARTIAL_WEBHOOK))->toBeTrue();
+    expect($this->service->hasFeature($workspace, Feature::CUSTOM_SMTP))->toBeTrue();
     expect($this->service->hasFormFeature($workspace, 'enable_partial_submissions'))->toBeTrue();
     expect($this->service->getFeatures($workspace))->toContain(
         Feature::PARTIAL_SUBMISSIONS,
         Feature::INTEGRATIONS_PARTIAL_WEBHOOK,
+        Feature::CUSTOM_SMTP,
         'enable_partial_submissions',
     );
 });

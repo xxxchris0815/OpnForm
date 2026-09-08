@@ -153,7 +153,7 @@ class LicenseService
 
     /**
      * Check if the active license grants a specific application feature
-     * using the self_hosted_features config (e.g. 'sso.oidc', 'custom_smtp').
+     * using the self_hosted_features config (e.g. 'sso.oidc', 'custom_code').
      */
     public function hasAppFeature(string $appFeature): bool
     {

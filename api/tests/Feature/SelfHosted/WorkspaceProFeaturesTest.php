@@ -48,16 +48,16 @@ describe('custom SMTP / email settings', function () {
         'sender_address' => 'noreply@example.com',
     ];
 
-    it('blocks email settings without license', function () use (&$validEmailPayload) {
+    it('allows email settings without a license', function () use (&$validEmailPayload) {
         $response = $this->putJson(
             route('open.workspaces.save-email-settings', ['workspace' => $this->workspace]),
             $validEmailPayload,
         );
 
-        $response->assertStatus(403);
+        $response->assertSuccessful();
     });
 
-    it('blocks email settings with license missing custom_smtp feature', function () use (&$validEmailPayload) {
+    it('allows email settings with a license that does not include custom_smtp', function () use (&$validEmailPayload) {
         activateLicenseWithFeatures(['sso' => true, 'multiOrg' => true]);
 
         $response = $this->putJson(
@@ -65,7 +65,7 @@ describe('custom SMTP / email settings', function () {
             $validEmailPayload,
         );
 
-        $response->assertStatus(403);
+        $response->assertSuccessful();
     });
 
     it('allows email settings with license having custom_smtp feature', function () use (&$validEmailPayload) {

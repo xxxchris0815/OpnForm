@@ -37,6 +37,7 @@ Community self-hosted installations include the core OpnForm product:
 -   Embeds and the JavaScript SDK
 -   Webhooks and standard integrations available in your deployment
 -   Instance-wide email sending with `MAIL_*` environment variables
+-   Workspace Email Settings for a dedicated SMTP sender per workspace
 -   Instance-wide domain configuration with `APP_URL`, `FRONT_URL`, and your reverse proxy
 -   Instance-wide file storage configuration, including local and S3-compatible storage
 -   Standard authentication and OAuth providers configured with environment variables
@@ -53,7 +54,6 @@ Self-hosted Enterprise unlocks advanced workspace and organization controls:
 | SSO | SAML and LDAP single sign-on features; OIDC remains available on Community self-hosted within the 2-user limit |
 | Multi-org | Multiple workspaces and advanced team role features |
 | White label | Branding removal, advanced branding, and white-label controls |
-| Workspace Custom SMTP | Dedicated SMTP settings for individual workspaces |
 | Audit logs | Audit and compliance-oriented visibility features |
 | External storage | Enterprise storage controls beyond the instance-wide default |
 | Custom code | Workspace and form custom code when enabled for self-hosted deployments |
@@ -69,7 +69,7 @@ Some OpnForm settings exist at two levels. The instance-wide configuration is av
 
 | Area | Community instance-wide configuration | Enterprise workspace feature |
 | ---- | ------------------------------------- | ---------------------------- |
-| Email | Configure the default sender with `MAIL_*` variables | Configure Workspace Custom SMTP for a specific workspace |
+| Email | Configure the default sender with `MAIL_*` variables, plus optional per-workspace SMTP in Email Settings | No additional license-gated email feature |
 | Storage | Configure the default filesystem or S3-compatible storage | Use Enterprise external storage controls when available |
 | Branding | Use core form customization options | Remove OpnForm branding and use advanced white-label controls |
 | Authentication | Use standard login, configured OAuth providers, and OIDC within the 2-user limit | Use SAML/LDAP SSO and add more than 2 users |

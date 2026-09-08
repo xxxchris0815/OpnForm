@@ -306,7 +306,7 @@ describe('hasAppFeature', function () {
 
         Cache::put('self_hosted_license_check', new LicenseCheckResult(
             status: 'active',
-            features: ['sso' => true, 'custom_smtp' => true],
+            features: ['sso' => true, 'custom_code' => true],
             lastChecked: now(),
         ), 86400);
 
@@ -314,7 +314,7 @@ describe('hasAppFeature', function () {
 
         expect($service->hasAppFeature('sso.oidc'))->toBeFalse();
         expect($service->hasAppFeature('sso.saml'))->toBeTrue();
-        expect($service->hasAppFeature('custom_smtp'))->toBeTrue();
+        expect($service->hasAppFeature('custom_code'))->toBeTrue();
         expect($service->hasAppFeature('audit_logs'))->toBeFalse();
     });
 });

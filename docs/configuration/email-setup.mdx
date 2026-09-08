@@ -14,12 +14,13 @@ OpnForm uses Laravel's mail system. For more detailed information, you can refer
 Self-hosted OpnForm has two email configuration levels:
 
 -   **Instance-wide email sending**: Configure the default mailer for your whole OpnForm instance with environment variables such as `MAIL_MAILER`, `MAIL_HOST`, and `MAIL_FROM_ADDRESS`. This is the standard setup for sending account emails, notifications, and any form email notification that does not use workspace-specific SMTP settings.
--   **Workspace email settings**: Configure a custom SMTP server from a workspace's **Email Settings** page. These settings apply only to that workspace and override the instance-wide mailer for that workspace's form email notifications. Workspace email settings are a self-hosted Enterprise feature.
+-   **Workspace email settings**: Configure a custom SMTP server from a workspace's **Email Settings** page. These settings apply only to that workspace and override the instance-wide mailer for that workspace's form email notifications. Self-hosted Community instances can use workspace SMTP without an Enterprise license.
 
 <Info>
     You do not need workspace email settings to send emails from a self-hosted
-    instance. Configure the instance-wide `MAIL_*` variables first, then use
-    workspace email settings only when a workspace needs its own SMTP server or
+    instance. Configure the instance-wide `MAIL_*` variables first if you want
+    a default sender for account emails and workspaces without their own SMTP.
+    Use workspace email settings when a workspace needs its own SMTP server or
     sender identity. See [Workspace Custom
     SMTP](/deployment/enterprise-features/workspace-custom-smtp) for details.
 </Info>
@@ -74,8 +75,7 @@ To configure workspace SMTP settings:
 <Note>
     Workspace email settings do not replace the instance-wide mail
     configuration. Keep the `MAIL_*` variables configured as the default sender
-    and fallback for your instance. Workspace email settings require a
-    self-hosted Enterprise license.
+    and fallback for account emails and workspaces without their own SMTP.
 </Note>
 
 import CloudVersion from "/snippets/cloud-version.mdx";

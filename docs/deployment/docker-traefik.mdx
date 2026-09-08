@@ -241,6 +241,18 @@ docker build -t opnform-ui:local -f docker/Dockerfile.client .
 
 Hard-refresh the browser after the new UI container is up. Restarting the old `opnform-ui:local` image is not enough.
 </Accordion>
+<Accordion title="Workspace Email Settings ask for an Enterprise license">
+Self-hosted Community can save workspace SMTP without a license. Pull this branch, rebuild **both** images, and recreate the API and UI containers:
+
+```bash
+git pull
+docker build -t opnform-api:local -f docker/Dockerfile.api .
+docker build -t opnform-ui:local -f docker/Dockerfile.client .
+./scripts/docker-compose-traefik.sh up -d --force-recreate api api-worker api-scheduler ui
+```
+
+Then open workspace **Email Settings**, enter SMTP details, and add an Email Notification on a form. Keep instance-wide `MAIL_*` configured if you also want account emails such as password resets.
+</Accordion>
 </AccordionGroup>
 
 ## Next steps

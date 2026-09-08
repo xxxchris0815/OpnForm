@@ -6,9 +6,9 @@ description: Use dedicated SMTP credentials for a specific OpnForm workspace
 Workspace Custom SMTP lets a workspace send form email notifications through its own SMTP server instead of the instance-wide mailer.
 
 <Info>
-    Workspace Custom SMTP is a self-hosted Enterprise feature. Instance-wide
-    email sending with `MAIL_*` environment variables remains available without
-    an Enterprise license.
+    Self-hosted Community instances can use Workspace Custom SMTP without an
+    Enterprise license. Instance-wide email sending with `MAIL_*` environment
+    variables remains the default sender for the whole instance.
 </Info>
 
 ## What this unlocks
@@ -23,7 +23,6 @@ Use Workspace Custom SMTP when:
 
 Make sure you have:
 
--   An active self-hosted Enterprise license with Workspace Custom SMTP enabled
 -   Workspace admin access
 -   SMTP host, port, encryption, username, password, and sender address
 
