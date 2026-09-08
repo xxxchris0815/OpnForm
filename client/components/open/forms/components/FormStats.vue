@@ -194,6 +194,12 @@ const chartData = computed(() => {
       borderColor: "rgba(255, 193, 7, 1)",
       data: statsData.value?.partial_submissions || [],
     })
+    baseDatasets.push({
+      label: "Abandoned Submissions",
+      backgroundColor: "rgba(115, 115, 115, 1)",
+      borderColor: "rgba(115, 115, 115, 1)",
+      data: statsData.value?.abandoned_submissions || [],
+    })
   }
 
   return {

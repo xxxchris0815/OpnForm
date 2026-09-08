@@ -4,6 +4,7 @@ import sitemap from "./sitemap"
 
 const isUnitTestMode = !!process.env.VITEST
 const isE2EMode = process.env.E2E === '1'
+const isDockerBuild = process.env.NUXT_DOCKER_BUILD === '1'
 const isDevtoolsEnabled =
   process.env.NUXT_DEVTOOLS === '1' && !isE2EMode && process.env.NODE_ENV !== 'production'
 const buildDir = process.env.NUXT_BUILD_DIR
@@ -13,7 +14,15 @@ export default defineNuxtConfig({
   loglevel: process.env.NUXT_LOG_LEVEL || 'info',
   devtools: {enabled: isDevtoolsEnabled},
   ...(buildDir ? {buildDir} : {}),
-  ...(viteCacheDir ? {vite: {cacheDir: viteCacheDir}} : {}),
+  vite: {
+    ...(viteCacheDir ? {cacheDir: viteCacheDir} : {}),
+    ...(isDockerBuild ? {
+      build: {
+        sourcemap: false,
+        reportCompressedSize: false,
+      }
+    } : {}),
+  },
   css: ['~/css/app.css'],
 
   // Disable certain plugins during testing
@@ -26,7 +35,7 @@ export default defineNuxtConfig({
       'nuxt-utm', 
       '@nuxtjs/i18n',
       '@nuxt/icon', 
-      ...(isE2EMode ? [] : ['@sentry/nuxt/module']),
+      ...(isE2EMode || isDockerBuild ? [] : ['@sentry/nuxt/module']),
       '@zadigetvoltaire/nuxt-gtm',
   ],
 
@@ -98,7 +107,7 @@ export default defineNuxtConfig({
       },
   },
 
-  sourcemap: { client: 'hidden' },
+  sourcemap: isDockerBuild ? { client: false, server: false } : { client: 'hidden' },
 
   gtag: {
       id: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_CODE,

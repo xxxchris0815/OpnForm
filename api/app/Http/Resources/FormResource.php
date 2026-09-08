@@ -44,6 +44,8 @@ class FormResource extends JsonResource
                 'seo_meta' => $this->seo_meta,
                 'submission_retention_value' => $this->submission_retention_value,
                 'submission_retention_unit' => $this->submission_retention_unit,
+                'partial_submission_abandonment_value' => $this->partial_submission_abandonment_value,
+                'partial_submission_abandonment_unit' => $this->partial_submission_abandonment_unit,
             ];
 
             if ($this->userIsReadonly()) {

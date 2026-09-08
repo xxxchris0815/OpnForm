@@ -107,6 +107,9 @@ it to `*`: doing so would make a direct client-provided forwarding header
 trustworthy and allow rate-limit bypasses. Recreate the API container after
 changing it.
 
+For a full Traefik walkthrough, including labels, Docker networks, and TLS,
+see [Docker with Traefik](/deployment/docker-traefik).
+
 ### Initial Setup
 
 After deployment, OpnForm will automatically redirect you to a setup page where you can create your admin account. Simply visit `http://localhost` and you'll be guided through the setup process.
@@ -188,6 +191,8 @@ docker build -t opnform-api:local -f docker/Dockerfile.api .
 docker build -t opnform-ui:local -f docker/Dockerfile.client .
 ```
 
+The UI build can take several minutes and several GB of RAM. Warnings about CSS minification, chunk size, and missing Sentry tokens are normal. If the build exits with `signal SIGKILL`, the host ran out of memory; see [Docker with Traefik](/deployment/docker-traefik#common-traefik-issues).
+
 ### Custom Configuration
 
 Create a `docker-compose.override.yml` to customize your deployment:
@@ -200,10 +205,9 @@ services:
             PHP_MEMORY_LIMIT: 1G
     ui:
         image: opnform-ui:local
-    ingress:
-        volumes:
-            - ./custom-nginx.conf:/etc/nginx/conf.d/default.conf
 ```
+
+Do not add an `ingress` service to the override file unless it also sets `image: nginx:1`. Traefik labels belong in `docker-compose.traefik.yml`.
 
 ## Environment Variables
 

@@ -700,6 +700,8 @@ class FormSummaryService
             $query->where('status', FormSubmission::STATUS_COMPLETED);
         } elseif ($status === 'partial') {
             $query->where('status', FormSubmission::STATUS_PARTIAL);
+        } elseif ($status === 'abandoned') {
+            $query->where('status', FormSubmission::STATUS_ABANDONED);
         }
         // 'all' = no status filter
 

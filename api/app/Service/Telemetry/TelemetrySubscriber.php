@@ -36,7 +36,7 @@ class TelemetrySubscriber
             $event instanceof FormCreated => TelemetryEvent::FORM_CREATED,
             $event instanceof WorkspaceCreated => TelemetryEvent::WORKSPACE_CREATED,
             $event instanceof UserCreated => TelemetryEvent::USER_CREATED,
-            $event instanceof FormSubmitted => TelemetryEvent::FORM_SUBMISSION,
+            $event instanceof FormSubmitted && $event->eventType === FormSubmitted::EVENT_CREATED => TelemetryEvent::FORM_SUBMISSION,
             default => null,
         };
 

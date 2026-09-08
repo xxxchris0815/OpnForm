@@ -127,6 +127,14 @@ abstract class AbstractIntegrationHandler
 
     abstract public static function getValidationRules(?Form $form): array;
 
+    /**
+     * @return array<int, string>
+     */
+    public static function supportedEvents(): array
+    {
+        return [FormSubmitted::EVENT_CREATED];
+    }
+
     public static function isOAuthRequired(): bool
     {
         return false;

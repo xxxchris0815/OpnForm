@@ -632,7 +632,7 @@ class FormLogicConditionChecker
         $dbConnection = DB::connection()->getDriverName();
 
         $query = FormSubmission::where('form_id', $formId)
-            ->where('status', '!=', FormSubmission::STATUS_PARTIAL);
+            ->where('status', FormSubmission::STATUS_COMPLETED);
 
         // SQLite does not support row-level locking for this query path.
         if ($dbConnection !== 'sqlite') {

@@ -168,6 +168,18 @@ abstract class UserFormRequest extends \Illuminate\Foundation\Http\FormRequest
             'auto_save' => 'boolean',
             'auto_focus' => 'boolean',
             'enable_partial_submissions' => 'boolean',
+            'partial_submission_abandonment_value' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:3650',
+                'required_with:partial_submission_abandonment_unit',
+            ],
+            'partial_submission_abandonment_unit' => [
+                'nullable',
+                Rule::in(Form::PARTIAL_SUBMISSION_ABANDONMENT_UNITS),
+                'required_with:partial_submission_abandonment_value',
+            ],
             'enable_ip_tracking' => 'boolean',
             'submission_retention_value' => [
                 'nullable',

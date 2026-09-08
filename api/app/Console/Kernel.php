@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('forms:database-cleanup')->hourly();
         $schedule->command('forms:purge-expired-submissions')->hourly()->withoutOverlapping();
+        $schedule->command('forms:mark-abandoned-submissions')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('forms:retry-pending-submission-file-deletions')->everyFifteenMinutes()->withoutOverlapping();
         $schedule->command('forms:integration-events-cleanup')->daily();
         $schedule->command('agent-drafts:purge-expired')->hourly()->withoutOverlapping();

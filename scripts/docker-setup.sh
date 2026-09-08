@@ -22,6 +22,7 @@ echo -e "${NC}"
 
 # Default values
 DEV_MODE=false
+TRAEFIK_MODE=false
 PUBLIC_URL=""
 PUBLIC_URL_PROVIDED=false
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,6 +32,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --dev) DEV_MODE=true ;;
+        --traefik) TRAEFIK_MODE=true ;;
         --public-url)
             PUBLIC_URL_PROVIDED=true
             if [[ "$#" -lt 2 ]]; then
@@ -51,6 +53,11 @@ done
 
 if [[ "$PUBLIC_URL_PROVIDED" == true && -z "$PUBLIC_URL" ]]; then
     echo "--public-url cannot be empty."
+    exit 1
+fi
+
+if [[ "$DEV_MODE" == true && "$TRAEFIK_MODE" == true ]]; then
+    echo "--traefik is only available for production Docker setup."
     exit 1
 fi
 
@@ -142,9 +149,34 @@ else
 fi
 
 # Build compose args as array
-COMPOSE_ARGS=(-f "$COMPOSE_FILE")
+COMPOSE_ARGS=()
+if [ "$TRAEFIK_MODE" = true ]; then
+    TRAEFIK_ENV="docker/traefik.env"
+    if [ ! -f "$TRAEFIK_ENV" ]; then
+        cp docker/traefik.env.example "$TRAEFIK_ENV"
+        if [[ -n "$PUBLIC_URL" ]]; then
+            TRAEFIK_HOST="${PUBLIC_URL#http://}"
+            TRAEFIK_HOST="${TRAEFIK_HOST#https://}"
+            TRAEFIK_HOST="${TRAEFIK_HOST%%/*}"
+            TRAEFIK_HOST="${TRAEFIK_HOST%%:*}"
+            sed -i "s/^OPNFORM_DOMAIN=.*/OPNFORM_DOMAIN=${TRAEFIK_HOST}/" "$TRAEFIK_ENV"
+        fi
+        echo -e "${BLUE}Wrote ${TRAEFIK_ENV} — set OPNFORM_DOMAIN if the hostname is wrong${NC}"
+    fi
+    COMPOSE_ARGS+=(--env-file "$TRAEFIK_ENV")
+fi
+COMPOSE_ARGS+=(-f "$COMPOSE_FILE")
+if [ "$TRAEFIK_MODE" = true ]; then
+    echo -e "${BLUE}Traefik mode — using docker-compose.traefik.yml${NC}"
+    COMPOSE_ARGS+=(-f docker-compose.traefik.yml)
+fi
 if [ -f "docker-compose.override.yml" ]; then
     echo -e "${BLUE}Found docker-compose.override.yml - including local overrides${NC}"
+    if [ "$TRAEFIK_MODE" = true ] && grep -qE '^[[:space:]]+ingress:' docker-compose.override.yml; then
+        echo -e "${YELLOW}docker-compose.override.yml defines ingress and would drop the nginx image.${NC}"
+        echo "Replace it with docker-compose.override.example.yml (API/UI images only)."
+        exit 1
+    fi
     COMPOSE_ARGS+=(-f "docker-compose.override.yml")
 fi
 

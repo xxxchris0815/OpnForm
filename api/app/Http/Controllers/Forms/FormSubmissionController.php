@@ -57,9 +57,11 @@ class FormSubmissionController extends Controller
         if (request()->has('status') && request()->get('status') !== 'all') {
             $status = request()->get('status');
             if ($status === FormSubmission::STATUS_COMPLETED) {
-                $query->where('status', '!=', FormSubmission::STATUS_PARTIAL);
+                $query->where('status', FormSubmission::STATUS_COMPLETED);
             } elseif ($status === FormSubmission::STATUS_PARTIAL) {
                 $query->where('status', FormSubmission::STATUS_PARTIAL);
+            } elseif ($status === FormSubmission::STATUS_ABANDONED) {
+                $query->where('status', FormSubmission::STATUS_ABANDONED);
             }
         }
 

@@ -4,6 +4,7 @@ import FocusedToggleInput from '~/components/forms/core/FocusedToggleInput.vue'
 
 const integrationRegistry = new Map([
   ['webhook', () => import('~/components/open/integrations/WebhookIntegration.vue')],
+  ['partial_webhook', () => import('~/components/open/integrations/PartialWebhookIntegration.vue')],
   ['email', () => import('~/components/open/integrations/EmailIntegration.vue')],
   ['slack', () => import('~/components/open/integrations/SlackIntegration.vue')],
   ['discord', () => import('~/components/open/integrations/DiscordIntegration.vue')],

@@ -66,6 +66,8 @@ class Form extends Model implements CachableAttributes, VersionableNestedDiff
 
     public const SUBMISSION_RETENTION_UNITS = ['day', 'week', 'month', 'year'];
 
+    public const PARTIAL_SUBMISSION_ABANDONMENT_UNITS = ['minute', 'hour', 'day'];
+
     public const LANGUAGES = [
         'ar',
         'bn',
@@ -163,6 +165,8 @@ class Form extends Model implements CachableAttributes, VersionableNestedDiff
         'auto_save',
         'auto_focus',
         'enable_partial_submissions',
+        'partial_submission_abandonment_value',
+        'partial_submission_abandonment_unit',
         'enable_ip_tracking',
         'submission_retention_value',
         'submission_retention_unit',
@@ -191,6 +195,7 @@ class Form extends Model implements CachableAttributes, VersionableNestedDiff
             'cover_settings' => 'array',
             'translations' => 'array',
             'enable_partial_submissions' => 'boolean',
+            'partial_submission_abandonment_value' => 'integer',
             'enable_ip_tracking' => 'boolean',
             'submission_retention_value' => 'integer',
             'auto_save' => 'boolean',
@@ -215,6 +220,8 @@ class Form extends Model implements CachableAttributes, VersionableNestedDiff
         'removed_properties',
         'submission_retention_value',
         'submission_retention_unit',
+        'partial_submission_abandonment_value',
+        'partial_submission_abandonment_unit',
     ];
 
     protected $cachableAttributes = [

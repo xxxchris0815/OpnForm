@@ -1,0 +1,98 @@
+---
+title: "Partial and abandoned submissions"
+description: "Save incomplete form answers on the server, mark them as abandoned after a timeout, and send them to a dedicated webhook"
+---
+
+OpnForm can store in-progress answers on the server, keep them in your submissions table, and notify a dedicated webhook when a respondent stops filling the form.
+
+<Note>
+    Collecting partial submissions is a Business-tier form feature on OpnForm Cloud.
+    Self-hosted Community instances can use it without an Enterprise license; it is
+    not one of the license-gated Enterprise features. The Incomplete Submission Webhook
+    card on the Integrations page stays clickable there even though the workspace plan
+    is shown as Pro.
+</Note>
+
+## What gets stored
+
+When **Collect partial submissions** is enabled, the public form periodically sends the current answers to the API (debounced while the respondent types, and immediately on tab hide or page unload). Those records are saved as submissions with status `partial`.
+
+Completed answers continue to use status `completed`. They still go to your existing Email, Slack, Discord, Zapier, and **Webhook Notification** integrations.
+
+Incomplete answers are stored in the same submissions table. They appear in the submissions list as **In Progress**.
+
+## Abandonment timeout
+
+There is no global default timeout. A draft stays `partial` until you configure one.
+
+To mark inactive drafts as abandoned:
+
+1. Open the form editor and go to **Submission Settings**.
+2. Enable **Collect partial submissions**.
+3. Enable **Mark inactive drafts as abandoned**.
+4. Choose a timeout, such as 15 minutes, 30 minutes, 1 hour, or 24 hours.
+
+The timeout is measured from the last successful partial save, not from the moment the form was opened. If the respondent keeps typing, the timer resets.
+
+When the timeout expires, OpnForm:
+
+- Changes the submission status from `partial` to `abandoned`
+- Leaves the last saved answers in the database
+- Sends a dedicated Incomplete Submission webhook, if you configured one
+
+The scheduler checks for abandoned drafts every five minutes.
+
+A respondent who still has the form open (or comes back later with the same draft) can finish the form. Completing an abandoned draft turns it into a normal `completed` submission and fires your usual completion integrations.
+
+## Dedicated incomplete-submission webhook
+
+Use a separate webhook URL for incomplete data so your completion automations do not receive drafts.
+
+1. Enable **Collect partial submissions** on the form.
+2. Open **Integrations** and add **Incomplete Submission Webhook**.
+3. Enter the HTTPS endpoint that should receive incomplete data.
+4. Choose when to send:
+    - **When a submission is abandoned** (default): once, after the timeout, with the last saved answers
+    - **When a partial submission is first saved**: once, the first time answers are stored on the server
+5. Optionally add a signing secret and custom headers, the same way as a regular webhook.
+
+You can use both events, or only one of them. Existing **Webhook Notification** integrations still fire only for completed submissions.
+
+### Payload
+
+The incomplete-submission webhook uses the same field layout as a regular webhook, plus `event` and `status`:
+
+```json
+{
+  "event": "submission.abandoned",
+  "status": "abandoned",
+  "form_id": 123,
+  "form_title": "Contact Form",
+  "form_slug": "contact-form",
+  "submission_id": 456,
+  "abandoned_at": "2026-09-08T12:30:00+00:00",
+  "submission": {
+    "Name": "Ada"
+  },
+  "data": {
+    "name": {
+      "value": "Ada",
+      "name": "Name",
+      "type": "text"
+    }
+  }
+}
+```
+
+`event` is `submission.abandoned` or `submission.partial`. `abandoned_at` is present only for abandoned deliveries.
+
+See [Webhook security](/api-reference/integrations/webhook-security) for HMAC signature validation.
+
+## Viewing and exporting drafts
+
+The submissions table can filter by **Submitted**, **In Progress**, and **Abandoned**. CSV exports include those status labels when partial submissions are enabled.
+
+<Tip>
+    Pair the timeout with [submission retention](/configuration/environment-variables)
+    if you do not want abandoned drafts to stay in the database indefinitely.
+</Tip>

@@ -1,0 +1,15 @@
+# Copy to docker-compose.override.yml after building local images:
+#   cp docker-compose.override.example.yml docker-compose.override.yml
+#
+# Never add an `ingress` service here. Traefik labels live in
+# docker-compose.traefik.yml, which already sets image: nginx:1.
+
+services:
+  api:
+    image: opnform-api:local
+  api-worker:
+    image: opnform-api:local
+  api-scheduler:
+    image: opnform-api:local
+  ui:
+    image: opnform-ui:local

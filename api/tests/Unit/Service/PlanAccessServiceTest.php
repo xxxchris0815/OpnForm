@@ -50,6 +50,35 @@ it('does not leak paid workspace or form features into a free workspace payload'
     expect($this->service->hasFormFeature($workspace, 'redirect_url'))->toBeFalse();
 });
 
+it('grants partial submissions on self-hosted without an enterprise license', function () {
+    config()->set('app.self_hosted', true);
+    config()->set('cashier.key', null);
+    Cache::flush();
+
+    $user = $this->createUser();
+    $workspace = $this->createUserWorkspace($user);
+
+    expect($this->service->getTier($workspace))->toBe('pro');
+    expect($this->service->hasFeature($workspace, Feature::PARTIAL_SUBMISSIONS))->toBeTrue();
+    expect($this->service->hasFeature($workspace, Feature::INTEGRATIONS_PARTIAL_WEBHOOK))->toBeTrue();
+    expect($this->service->hasFeature($workspace, Feature::CUSTOM_SMTP))->toBeTrue();
+    expect($this->service->hasFormFeature($workspace, 'enable_partial_submissions'))->toBeTrue();
+    expect($this->service->getFeatures($workspace))->toContain(
+        Feature::PARTIAL_SUBMISSIONS,
+        Feature::INTEGRATIONS_PARTIAL_WEBHOOK,
+        Feature::CUSTOM_SMTP,
+        'enable_partial_submissions',
+    );
+});
+
+it('does not grant partial submissions to a cloud pro workspace', function () {
+    $user = $this->createProUser();
+    $workspace = $this->createUserWorkspace($user);
+
+    expect($this->service->hasFeature($workspace, Feature::PARTIAL_SUBMISSIONS))->toBeFalse();
+    expect($this->service->hasFeature($workspace, Feature::INTEGRATIONS_PARTIAL_WEBHOOK))->toBeFalse();
+});
+
 it('requires self-hosted whitelabel for branding removal and no_branding', function () {
     config()->set('app.self_hosted', true);
     Cache::flush();

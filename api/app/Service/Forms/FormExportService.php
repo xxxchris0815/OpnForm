@@ -74,7 +74,11 @@ class FormExportService
 
         // Add status column if partial submissions are enabled
         if ($form->enable_partial_submissions) {
-            $filteredData['status'] = $submission->status === FormSubmission::STATUS_PARTIAL ? 'In Progress' : 'Completed';
+            $filteredData['status'] = match ($submission->status) {
+                FormSubmission::STATUS_PARTIAL => 'In Progress',
+                FormSubmission::STATUS_ABANDONED => 'Abandoned',
+                default => 'Completed',
+            };
         }
 
         return $filteredData;

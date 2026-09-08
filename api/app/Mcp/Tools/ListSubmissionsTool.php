@@ -27,7 +27,7 @@ class ListSubmissionsTool extends AuthenticatedMcpTool
         $validated = $request->validate([
             'form_id' => ['required', 'integer', 'min:1'],
             'search' => ['nullable', 'string', 'max:255'],
-            'status' => ['nullable', Rule::in(['all', 'completed', 'partial'])],
+            'status' => ['nullable', Rule::in(['all', 'completed', 'partial', 'abandoned'])],
             'date_from' => ['nullable', 'date', Rule::when($request->filled('date_to'), 'before_or_equal:date_to')],
             'date_to' => ['nullable', 'date', Rule::when($request->filled('date_from'), 'after_or_equal:date_from')],
             'page' => ['nullable', 'integer', 'min:1'],
@@ -51,7 +51,7 @@ class ListSubmissionsTool extends AuthenticatedMcpTool
         return [
             'form_id' => $schema->integer()->min(1)->required(),
             'search' => $schema->string()->max(255),
-            'status' => $schema->string()->enum(['all', 'completed', 'partial'])->default('completed'),
+            'status' => $schema->string()->enum(['all', 'completed', 'partial', 'abandoned'])->default('completed'),
             'date_from' => $schema->string()->description('Inclusive ISO 8601 date.'),
             'date_to' => $schema->string()->description('Inclusive ISO 8601 date.'),
             'page' => $schema->integer()->min(1)->default(1),

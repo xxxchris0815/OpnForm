@@ -109,6 +109,7 @@ class McpSubmissionService
         $views = $form->views_count;
         $completed = $form->submissions()->where('status', FormSubmission::STATUS_COMPLETED)->count();
         $partial = $form->submissions()->where('status', FormSubmission::STATUS_PARTIAL)->count();
+        $abandoned = $form->submissions()->where('status', FormSubmission::STATUS_ABANDONED)->count();
 
         return [
             'form_id' => $form->id,
@@ -121,6 +122,7 @@ class McpSubmissionService
                 'views' => $views,
                 'completed_submissions' => $completed,
                 'partial_submissions' => $partial,
+                'abandoned_submissions' => $abandoned,
                 'completion_rate' => $views > 0 ? round(($completed / $views) * 100, 2) : 0,
             ],
             'filtered_submissions' => $filteredCount,
@@ -229,6 +231,7 @@ class McpSubmissionService
         return $form->submissions()->getQuery()
             ->when($status === 'completed', fn (Builder $query) => $query->where('status', FormSubmission::STATUS_COMPLETED))
             ->when($status === 'partial', fn (Builder $query) => $query->where('status', FormSubmission::STATUS_PARTIAL))
+            ->when($status === 'abandoned', fn (Builder $query) => $query->where('status', FormSubmission::STATUS_ABANDONED))
             ->when($dateFrom, fn (Builder $query) => $query->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn (Builder $query) => $query->whereDate('created_at', '<=', $dateTo));
     }

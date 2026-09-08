@@ -6,9 +6,7 @@
         <p class="mt-1 text-sm text-neutral-500">
           Configure a custom SMTP sender for this workspace.
         </p>
-        <PlanTag
-          :required-tier="isSelfHosted ? 'self_hosted' : 'pro'"
-        />
+        <PlanTag feature="custom_smtp" />
       </div>
 
       <UButton
@@ -26,7 +24,7 @@
       color="info"
       variant="subtle"
       title="Instance-wide email sending is configured separately"
-      description="Use MAIL_* environment variables to configure the default sender for your whole self-hosted instance. These workspace settings override that sender for this workspace and require a self-hosted Enterprise license."
+      description="Use MAIL_* environment variables to configure the default sender for your whole self-hosted instance. These workspace settings override that sender for form notifications from this workspace."
       :actions="[{
         label: 'Email setup docs',
         icon: 'i-heroicons-arrow-top-right-on-square',

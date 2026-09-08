@@ -26,7 +26,7 @@ class GetSubmissionStatsTool extends AuthenticatedMcpTool
     {
         $validated = $request->validate([
             'form_id' => ['required', 'integer', 'min:1'],
-            'status' => ['nullable', Rule::in(['all', 'completed', 'partial'])],
+            'status' => ['nullable', Rule::in(['all', 'completed', 'partial', 'abandoned'])],
             'date_from' => ['nullable', 'date', Rule::when($request->filled('date_to'), 'before_or_equal:date_to')],
             'date_to' => ['nullable', 'date', Rule::when($request->filled('date_from'), 'after_or_equal:date_from')],
         ]);
@@ -44,7 +44,7 @@ class GetSubmissionStatsTool extends AuthenticatedMcpTool
     {
         return [
             'form_id' => $schema->integer()->min(1)->required(),
-            'status' => $schema->string()->enum(['all', 'completed', 'partial'])->default('completed'),
+            'status' => $schema->string()->enum(['all', 'completed', 'partial', 'abandoned'])->default('completed'),
             'date_from' => $schema->string()->description('Inclusive ISO 8601 date.'),
             'date_to' => $schema->string()->description('Inclusive ISO 8601 date.'),
         ];
@@ -63,6 +63,7 @@ class GetSubmissionStatsTool extends AuthenticatedMcpTool
                 'views' => $schema->integer()->min(0)->required(),
                 'completed_submissions' => $schema->integer()->min(0)->required(),
                 'partial_submissions' => $schema->integer()->min(0)->required(),
+                'abandoned_submissions' => $schema->integer()->min(0)->required(),
                 'completion_rate' => $schema->number()->min(0)->required(),
             ])->withoutAdditionalProperties()->required(),
             'filtered_submissions' => $schema->integer()->min(0)->required(),

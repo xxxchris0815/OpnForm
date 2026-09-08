@@ -19,7 +19,8 @@ This endpoint requires a **Personal Access Token** with the `manage-integrations
 <ParamField body="integration_id" type="string" required>
     Use `"webhook"` for a generic webhook integration or `"make"` for the
     official OpnForm app on Make. Both values are registered integration
-    handlers exposed by this endpoint.
+    handlers exposed by this endpoint. Use `"partial_webhook"` for
+    [incomplete submission webhooks](/api-reference/integrations/create-partial-webhook-integration).
 </ParamField>
 
 <ParamField body="status" type="string" required>
