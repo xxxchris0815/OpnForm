@@ -1,0 +1,20 @@
+# Optional: nginx in das bestehende Caddy-Docker-Netz hängen.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.proxy.yml up -d
+#
+# PROXY_NETWORK in .env muss dem Netz deines Caddy-Stacks entsprechen
+# (oft `caddy`, `caddy_default` oder `proxy`).
+#
+# In der Caddyfile dann:
+#   reverse_proxy appflowy-nginx:80
+
+services:
+  nginx:
+    networks:
+      - internal
+      - proxy
+
+networks:
+  proxy:
+    name: ${PROXY_NETWORK:-caddy}
+    external: true

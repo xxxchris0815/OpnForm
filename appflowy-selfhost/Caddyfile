@@ -1,0 +1,29 @@
+# In deine bestehende Caddy-Konfiguration übernehmen.
+# Variante A (empfohlen, gleiches Host-System): Caddy mit host-gateway
+# oder Caddy im Host-Netzwerk, dann auf 127.0.0.1:8080 proxien.
+#
+# Variante B: gemeinsames Docker-Netz. Dann statt 127.0.0.1:8080
+# den Containernamen `appflowy-nginx:80` verwenden.
+
+appflowy.example.com {
+	encode gzip zstd
+
+	# Große Importe / Uploads
+	request_body {
+		max_size 2GB
+	}
+
+	reverse_proxy 127.0.0.1:8080 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+
+		# WebSockets und lange Chat-/Import-Requests
+		flush_interval -1
+		transport http {
+			read_timeout 24h
+			write_timeout 10m
+		}
+	}
+}
